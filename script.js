@@ -35,12 +35,16 @@ function operate(operator, a, b) {
             return 'ERR: Unknown Operator';
     }
 }
-let firstValue = '';
-let operator = '';
-let secondValue = '';
+
 let currentInput = "0";
 
+let firstOperand = null;
+let secondOperand = null;
+let currentOperator = null;
+let shouldResetDisplay = false;
+
 const display = document.querySelector("#display");
+
 const digitButtons = document.querySelectorAll(".digit");
 
 digitButtons.forEach(button => {
@@ -58,10 +62,23 @@ digitButtons.forEach(button => {
     });
 });
 
-let firstOperand = null;
-let secondOperand = null;
-let currentOperator = null;
-let shouldResetDisplay = false;
+const operatorButtons = document.querySelectorAll(".operator");
+
+operatorButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        if (currentOperator !== null && !shouldResetDisplay) {
+            secondOperand = currentInput;
+            const result = operate(currentOperator, Number(firstOperand), Number(secondOperand));
+            display.textContent = result;
+            firstOperand = display.textContent;
+        } else {
+            firstOperand = currentInput;
+        }
+
+        currentOperator = getOperatorKeyword(button.textContent);
+        shouldResetDisplay = true;
+    });
+});
 
 const allClearButton = document.querySelector("#allclear");
 
@@ -88,23 +105,6 @@ const percentageButton = document.querySelector("#percentage");
 percentageButton.addEventListener("click", () => {
     currentInput = (parseFloat(currentInput) / 100).toString();
     display.textContent = currentInput;
-});
-
-const operatorButtons = document.querySelectorAll(".operator");
-
-operatorButtons.forEach(button => {
-    button.addEventListener("click", () => {
-        if (currentOperator !== null && !shouldResetDisplay) {
-            secondOperand = currentInput;
-            display.textContent = operate(currentOperator, Number(firstOperand), Number(secondOperand));
-            firstOperand = display.textContent;
-        } else {
-            firstOperand = currentInput;
-        }
-
-        currentOperator = getOperatorKeyword(button.textContent);
-        shouldResetDisplay = true;
-    });
 });
 
 const equalsButton = document.querySelector("#equals");
