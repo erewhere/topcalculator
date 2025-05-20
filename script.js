@@ -63,6 +63,33 @@ let secondOperand = null;
 let currentOperator = null;
 let shouldResetDisplay = false;
 
+const allClearButton = document.querySelector("#allclear");
+
+allClearButton.addEventListener("click", () => {
+    currentInput = "0";
+    firstOperand = null;
+    secondOperand = null;
+    currentOperator = null;
+    shouldResetDisplay = false;
+    display.textContent = currentInput;
+});
+
+const plusMinusButton = document.querySelector("#plusminus");
+
+plusMinusButton.addEventListener("click", () => {
+    if (currentInput === "0") return;
+
+    currentInput = (parseFloat(currentInput) * -1).toString();
+    display.textContent = currentInput;
+});
+
+const percentageButton = document.querySelector("#percentage");
+
+percentageButton.addEventListener("click", () => {
+    currentInput = (parseFloat(currentInput) / 100).toString();
+    display.textContent = currentInput;
+});
+
 const operatorButtons = document.querySelectorAll(".operator");
 
 operatorButtons.forEach(button => {
@@ -78,4 +105,33 @@ operatorButtons.forEach(button => {
         currentOperator = getOperatorKeyword(button.textContent);
         shouldResetDisplay = true;
     });
+});
+
+const equalsButton = document.querySelector("#equals");
+
+equalsButton.addEventListener("click", () => {
+    if (currentOperator === null || shouldResetDisplay) return;
+
+    secondOperand = currentInput;
+    const result = operate(currentOperator, Number(firstOperand), Number(secondOperand));
+
+    display.textContent = result;
+    currentInput = result;
+    firstOperand = null;
+    currentOperator = null;
+    shouldResetDisplay = true;
+});
+
+const decimalButton = document.querySelector("#decimal");
+
+decimalButton.addEventListener("click", () => {
+    if (shouldResetDisplay) {
+        currentInput = "0";
+        shouldResetDisplay = false;
+    }
+
+    if (!currentInput.includes(".")) {
+        currentInput += ".";
+        display.textContent = currentInput;
+    }
 });
