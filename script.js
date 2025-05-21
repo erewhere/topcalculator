@@ -15,7 +15,7 @@ function getOperatorKeyword(symbol) {
     switch (symbol) {
         case '+': return 'add';
         case '-': return 'subtract';
-        case '*': return 'multiply';
+        case 'x': return 'multiply';
         case '/': return 'divide';
         default: return null;
     }
@@ -70,6 +70,8 @@ operatorButtons.forEach(button => {
     button.addEventListener("click", () => {
         if (isError) return;
 
+        const nextOperator = getOperatorKeyword(button.textContent);
+
         if (currentOperator !== null && !shouldResetDisplay) {
             secondOperand = currentInput;
             const result = operate(currentOperator, Number(firstOperand), Number(secondOperand));
@@ -80,13 +82,15 @@ operatorButtons.forEach(button => {
                 return;
             }
 
-            display.textContent = result;
-            firstOperand = display.textContent;
+            currentInput = result.toString();
+            display.textContent = currentInput;
+            firstOperand = currentInput;
+        } else if (shouldResetDisplay) {
         } else {
             firstOperand = currentInput;
         }
-
-        currentOperator = getOperatorKeyword(button.textContent);
+            
+        currentOperator = nextOperator;
         shouldResetDisplay = true;
     });
 });
@@ -118,7 +122,7 @@ const percentageButton = document.querySelector("#percentage");
 
 percentageButton.addEventListener("click", () => {
     if (isError) return;
-    
+
     currentInput = (parseFloat(currentInput) / 100).toString();
     display.textContent = currentInput;
 });
@@ -139,9 +143,9 @@ equalsButton.addEventListener("click", () => {
         return;
     }
 
-    display.textContent = result;
-    currentInput = result;
-    firstOperand = null;
+    display.textContent = result.toString();
+    currentInput = result.toString();
+    firstOperand = currentInput;
     currentOperator = null;
     shouldResetDisplay = true;
 });
