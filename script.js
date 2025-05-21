@@ -36,12 +36,25 @@ function operate(operator, a, b) {
     }
 }
 
+function clearError() {
+    isError = false;
+    currentInput = "0";
+    firstOperand = null;
+    secondOperand = null;
+    currentOperator = null;
+    shouldResetDisplay = false;
+    display.textContent = currentInput;
+}
+
 let currentInput = "0";
 let firstOperand = null;
 let secondOperand = null;
 let currentOperator = null;
 let shouldResetDisplay = false;
 let isError = false;
+let justEvaluated = false;
+// let lastOperator = null;
+// let lastSecondOperand = null;
 
 const display = document.querySelector("#display");
 
@@ -49,13 +62,16 @@ const digitButtons = document.querySelectorAll(".digit");
 
 digitButtons.forEach(button => {
     button.addEventListener("click", () => {
-        if (isError) return;
+        if (isError) {
+            clearError();
+        }
 
         const digit = button.textContent;
 
-        if (currentInput === "0" || shouldResetDisplay) {
+        if (currentInput === "0" || shouldResetDisplay || justEvaluated) {
             currentInput = digit;
             shouldResetDisplay = false;
+            justEvaluated = false;
         } else {
             currentInput += digit;
         }
@@ -72,7 +88,12 @@ operatorButtons.forEach(button => {
 
         const nextOperator = getOperatorKeyword(button.textContent);
 
-        if (currentOperator !== null && !shouldResetDisplay) {
+        if (justEvaluated) {
+            firstOperand = currentInput;
+            justEvaluated = false;
+        }
+
+        if (currentOperator && !shouldResetDisplay) {
             secondOperand = currentInput;
             const result = operate(currentOperator, Number(firstOperand), Number(secondOperand));
 
@@ -85,7 +106,6 @@ operatorButtons.forEach(button => {
             currentInput = result.toString();
             display.textContent = currentInput;
             firstOperand = currentInput;
-        } else if (shouldResetDisplay) {
         } else {
             firstOperand = currentInput;
         }
@@ -132,6 +152,21 @@ const equalsButton = document.querySelector("#equals");
 equalsButton.addEventListener("click", () => {
     if (isError) return;
 
+    if (currentOperator === null && lastOperator !== null) {
+
+        const result = operate(lastOperator, Number(currentInput), Number(lastSecondOperand));
+
+        if (result === 'ERR') {
+            display.textContent = 'ERR';
+            isError = true;
+            return;
+        }
+
+        currentInput = result.toString();
+        display.textContent = currentInput;
+        return;
+    }
+
     if (currentOperator === null || shouldResetDisplay) return;
 
     secondOperand = currentInput;
@@ -143,9 +178,13 @@ equalsButton.addEventListener("click", () => {
         return;
     }
 
-    display.textContent = result.toString();
     currentInput = result.toString();
-    firstOperand = currentInput;
+    display.textContent = currentInput;
+
+    lastSecondOperand = secondOperand;
+    lastOperator = currentOperator;
+
+    firstOperand = null;
     currentOperator = null;
     shouldResetDisplay = true;
 });

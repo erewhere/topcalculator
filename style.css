@@ -1,0 +1,76 @@
+/* Calculator Container */
+#calculator {
+    background-color: #FFD700; /* golden yellow */
+    width: 320px;
+    margin: 30px auto;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Display */
+#display {
+    width: 90%;
+    height: 90px;
+    background-color: #fff;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 4.2rem;
+    text-align: right;
+    padding: 10px 15px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+    overflow-wrap: break-word;
+}
+
+/* Buttons Container */
+#buttons-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(5, 60px);
+    gap: 10px;
+    width: 100%;
+}
+
+/* All Buttons */
+button {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    background-color: #fff;
+    transition: background-color 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+}
+
+/* Button Hover */
+button:hover {
+    background-color: #f0e68c; /* light khaki for subtle effect */
+}
+
+/* Operator Buttons */
+.operator {
+    background-color: #f9d342; /* lighter golden */
+}
+
+/* Operator Button Hover */
+.operator:hover {
+    background-color: #e6c230;
+}
+
+/* Equals Button */
+#equals {
+    background-color: #ffa500; /* orange */
+    color: white;
+}
+
+/* Equals Button Hover */
+#equals:hover {
+    background-color: #e59400;
+}
