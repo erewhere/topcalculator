@@ -1,7 +1,11 @@
+* {
+  box-sizing: border-box;
+}
+
 /* Calculator Container */
 #calculator {
     background-color: #FFD700; /* golden yellow */
-    width: 320px;
+    width: 340px;
     margin: 30px auto;
     padding: 20px;
     border-radius: 12px;
@@ -12,18 +16,28 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Display */
+#display-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Align DEL button to the right */
+    margin-bottom: 12px;
+}
+
+/* Display styling */
 #display {
-    width: 90%;
+    width: 100%;
+    max-width: 100%; /* Prevent overflow */
     height: 90px;
     background-color: #fff;
     border-radius: 8px;
-    margin-bottom: 20px;
-    font-size: 4.2rem;
+    font-size: 3.8rem; /* slightly smaller to fit */
     text-align: right;
-    padding: 10px 15px;
+    padding: 10px 12px; /* slightly reduced */
     box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
-    overflow-wrap: break-word;
+    overflow: hidden;
+    white-space: nowrap;
+    margin-bottom: 12px;
 }
 
 /* Buttons Container */

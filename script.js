@@ -44,11 +44,22 @@ function clearError() {
     currentOperator = null;
     shouldResetDisplay = false;
     display.textContent = currentInput;
+    updateAllClearButton();
 }
 
 function showError(message = 'ERR') {
     display.textContent = message;
     isError = true;
+}
+
+function updateAllClearButton() {
+    if (currentInput === '0' || !isInputting) {
+        allclearBtn.textContent = 'AC';
+        allclearBtn.classList.remove('danger');
+    } else {
+        allclearBtn.textContent = 'DEL';
+        allclearBtn.classList.add('danger');
+    }
 }
 
 let currentInput = "0";
@@ -60,6 +71,7 @@ let isError = false;
 let justEvaluated = false;
 let lastOperator = null;
 let lastSecondOperand = null;
+let isInputting = true;
 
 const display = document.querySelector("#display");
 
@@ -77,6 +89,9 @@ digitButtons.forEach(button => {
         } else {
             currentInput += digit;
         }
+
+        isInputting = true;
+        updateAllClearButton();
 
         display.textContent = currentInput;
     });
@@ -109,6 +124,7 @@ operatorButtons.forEach(button => {
 
             currentInput = result.toString();
             display.textContent = currentInput;
+            updateAllClearButton();
             firstOperand = currentInput;
         } else {
             firstOperand = currentInput;
@@ -116,11 +132,34 @@ operatorButtons.forEach(button => {
             
         currentOperator = nextOperator;
         shouldResetDisplay = true;
+
     });
 });
 
-const allClearButton = document.querySelector("#allclear");
-allClearButton.addEventListener("click", clearError);
+const allclearBtn = document.querySelector("#allclear");
+allclearBtn.addEventListener('click', () => {
+    if (isInputting) {
+        if (currentInput.length > 0) {
+            currentInput = currentInput.slice(0, -1);
+            if (currentInput === '') currentInput = '0';
+            display.textContent = currentInput;
+            updateAllClearButton();
+        }
+    } else {
+        currentInput = '0';
+        firstOperand = null;
+        secondOperand = null;
+        currentOperator = null;
+        shouldResetDisplay = false;
+        isError = false;
+        justEvaluated = false;
+        lastOperator = null;
+        lastSecondOperand = null;
+        isInputting = true;
+        display.textContent = currentInput;
+        updateAllClearButton();
+    }
+});
 
 const plusMinusButton = document.querySelector("#plusminus");
 plusMinusButton.addEventListener("click", () => {
@@ -129,6 +168,7 @@ plusMinusButton.addEventListener("click", () => {
 
     currentInput = (parseFloat(currentInput) * -1).toString();
     display.textContent = currentInput;
+    updateAllClearButton();
 });
 
 const percentageButton = document.querySelector("#percentage");
@@ -137,6 +177,7 @@ percentageButton.addEventListener("click", () => {
 
     currentInput = (parseFloat(currentInput) / 100).toString();
     display.textContent = currentInput;
+    updateAllClearButton();
 });
 
 const equalsButton = document.querySelector("#equals");
@@ -155,6 +196,8 @@ equalsButton.addEventListener("click", () => {
 
         currentInput = result.toString();
         display.textContent = currentInput;
+        updateAllClearButton();
+        justEvaluated = true;
         return;
     }
 
@@ -170,6 +213,7 @@ equalsButton.addEventListener("click", () => {
 
     currentInput = result.toString();
     display.textContent = currentInput;
+    updateAllClearButton();
 
     lastOperator = currentOperator;
     lastSecondOperand = secondOperand;
@@ -177,6 +221,9 @@ equalsButton.addEventListener("click", () => {
     firstOperand = null;
     currentOperator = null;
     shouldResetDisplay = true;
+
+    isInputting = false;
+    updateAllClearButton();
 });
 
 const decimalButton = document.querySelector("#decimal");
@@ -191,5 +238,6 @@ decimalButton.addEventListener("click", () => {
     if (!currentInput.includes(".")) {
         currentInput += ".";
         display.textContent = currentInput;
+        updateAllClearButton();
     }
 });
