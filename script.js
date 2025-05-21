@@ -32,7 +32,7 @@ function operate(operator, a, b) {
         case 'divide':
             return b===0 ? 'ERR' : divide(a, b);
         default:
-            return 'ERR: Unknown Operator';
+            return 'ERR';
     }
 }
 
@@ -46,6 +46,11 @@ function clearError() {
     display.textContent = currentInput;
 }
 
+function showError(message = 'ERR') {
+    display.textContent = message;
+    isError = true;
+}
+
 let currentInput = "0";
 let firstOperand = null;
 let secondOperand = null;
@@ -53,18 +58,15 @@ let currentOperator = null;
 let shouldResetDisplay = false;
 let isError = false;
 let justEvaluated = false;
-// let lastOperator = null;
-// let lastSecondOperand = null;
+let lastOperator = null;
+let lastSecondOperand = null;
 
 const display = document.querySelector("#display");
 
 const digitButtons = document.querySelectorAll(".digit");
-
 digitButtons.forEach(button => {
     button.addEventListener("click", () => {
-        if (isError) {
-            clearError();
-        }
+        if (isError) clearError();
 
         const digit = button.textContent;
 
@@ -81,12 +83,15 @@ digitButtons.forEach(button => {
 });
 
 const operatorButtons = document.querySelectorAll(".operator");
-
 operatorButtons.forEach(button => {
     button.addEventListener("click", () => {
         if (isError) return;
 
         const nextOperator = getOperatorKeyword(button.textContent);
+        if (!nextOperator) {
+            showError();
+            return;
+        }
 
         if (justEvaluated) {
             firstOperand = currentInput;
@@ -98,8 +103,7 @@ operatorButtons.forEach(button => {
             const result = operate(currentOperator, Number(firstOperand), Number(secondOperand));
 
             if (result === 'ERR') {
-                display.textContent = 'ERR';
-                isError = true;
+                showError();
                 return;
             }
 
@@ -116,22 +120,11 @@ operatorButtons.forEach(button => {
 });
 
 const allClearButton = document.querySelector("#allclear");
-
-allClearButton.addEventListener("click", () => {
-    currentInput = "0";
-    firstOperand = null;
-    secondOperand = null;
-    currentOperator = null;
-    shouldResetDisplay = false;
-    isError = false;
-    display.textContent = currentInput;
-});
+allClearButton.addEventListener("click", clearError);
 
 const plusMinusButton = document.querySelector("#plusminus");
-
 plusMinusButton.addEventListener("click", () => {
     if (isError) return;
-
     if (currentInput === "0") return;
 
     currentInput = (parseFloat(currentInput) * -1).toString();
@@ -139,7 +132,6 @@ plusMinusButton.addEventListener("click", () => {
 });
 
 const percentageButton = document.querySelector("#percentage");
-
 percentageButton.addEventListener("click", () => {
     if (isError) return;
 
@@ -148,17 +140,16 @@ percentageButton.addEventListener("click", () => {
 });
 
 const equalsButton = document.querySelector("#equals");
-
 equalsButton.addEventListener("click", () => {
     if (isError) return;
 
-    if (currentOperator === null && lastOperator !== null) {
+    if (currentOperator === null) {
+        if (!lastOperator || !lastSecondOperand) return;
 
         const result = operate(lastOperator, Number(currentInput), Number(lastSecondOperand));
 
         if (result === 'ERR') {
-            display.textContent = 'ERR';
-            isError = true;
+            showError();
             return;
         }
 
@@ -173,16 +164,15 @@ equalsButton.addEventListener("click", () => {
     const result = operate(currentOperator, Number(firstOperand), Number(secondOperand));
 
     if (result === 'ERR') {
-        display.textContent = 'ERR';
-        isError = true;
+        showError();
         return;
     }
 
     currentInput = result.toString();
     display.textContent = currentInput;
 
-    lastSecondOperand = secondOperand;
     lastOperator = currentOperator;
+    lastSecondOperand = secondOperand;
 
     firstOperand = null;
     currentOperator = null;
@@ -190,7 +180,6 @@ equalsButton.addEventListener("click", () => {
 });
 
 const decimalButton = document.querySelector("#decimal");
-
 decimalButton.addEventListener("click", () => {
     if (isError) return;
 
