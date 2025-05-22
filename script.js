@@ -36,20 +36,42 @@ function operate(operator, a, b) {
     }
 }
 
+function roundResult(result) {
+    return Math.round(result * 100000) / 100000;
+}
+
 function clearError() {
     isError = false;
     currentInput = "0";
     firstOperand = null;
     secondOperand = null;
     currentOperator = null;
+    currentOperatorSymbol = null;
     shouldResetDisplay = false;
-    display.textContent = currentInput;
+    justEvaluated = false;
+    lastOperator = null;
+    lastSecondOperand = null;
+    isInputting = true;
+    mainOutput.textContent = currentInput;
+    operationDisplay.textContent = "";
     updateAllClearButton();
 }
 
 function showError(message = 'ERR') {
-    display.textContent = message;
+    mainOutput.textContent = message;
+    operationDisplay.textContent = "";
     isError = true;
+    currentInput = "0";
+    firstOperand = null;
+    secondOperand = null;
+    currentOperator = null;
+    currentOperatorSymbol = null;
+    justEvaluated = false;
+    lastOperator = null;
+    lastSecondOperand = null;
+    shouldResetDisplay = true;
+    isInputting = false;
+    updateAllClearButton();
 }
 
 function updateAllClearButton() {
@@ -72,8 +94,11 @@ let justEvaluated = false;
 let lastOperator = null;
 let lastSecondOperand = null;
 let isInputting = true;
+let currentOperatorSymbol = null;
 
 const display = document.querySelector("#display");
+const operationDisplay = document.querySelector("#operation");
+const mainOutput = document.querySelector("#main-output");
 
 const digitButtons = document.querySelectorAll(".digit");
 digitButtons.forEach(button => {
@@ -85,15 +110,26 @@ digitButtons.forEach(button => {
         if (currentInput === "0" || shouldResetDisplay || justEvaluated) {
             currentInput = digit;
             shouldResetDisplay = false;
+
+            if (justEvaluated) {
+                operationDisplay.textContent = '';
+            }
+
             justEvaluated = false;
+
         } else {
             currentInput += digit;
         }
 
         isInputting = true;
+        mainOutput.textContent = currentInput;
         updateAllClearButton();
 
-        display.textContent = currentInput;
+        if (currentOperatorSymbol && firstOperand !== null) {
+            operationDisplay.textContent = `${firstOperand} ${currentOperatorSymbol} ${currentInput}`;
+        } else {
+            operationDisplay.textContent = currentInput;
+        }
     });
 });
 
@@ -102,81 +138,82 @@ operatorButtons.forEach(button => {
     button.addEventListener("click", () => {
         if (isError) return;
 
-        const nextOperator = getOperatorKeyword(button.textContent);
+        const symbol = button.textContent;
+        const nextOperator = getOperatorKeyword(symbol);
         if (!nextOperator) {
             showError();
             return;
         }
 
         if (justEvaluated) {
-            firstOperand = currentInput;
+            firstOperand = Number(currentInput);
             justEvaluated = false;
         }
 
         if (currentOperator && !shouldResetDisplay) {
             secondOperand = currentInput;
-            const result = operate(currentOperator, Number(firstOperand), Number(secondOperand));
 
-            if (result === 'ERR') {
+            if (currentOperator === 'divide' && Number(secondOperand) === 0) {
                 showError();
                 return;
             }
 
-            currentInput = result.toString();
-            display.textContent = currentInput;
-            updateAllClearButton();
-            firstOperand = currentInput;
+            const result = operate(currentOperator, Number(firstOperand), Number(secondOperand));
+            if (result === 'ERR' || result === Infinity || isNaN(result)) {
+                showError();
+                return;
+            }
+
+            currentInput = roundResult(result).toString();
+            mainOutput.textContent = currentInput;
+            firstOperand = Number(currentInput);
         } else {
-            firstOperand = currentInput;
+            firstOperand = Number(currentInput);
         }
             
         currentOperator = nextOperator;
+        currentOperatorSymbol = symbol;
         shouldResetDisplay = true;
+        isInputting = false;
 
+        operationDisplay.textContent = `${firstOperand} ${currentOperatorSymbol}`;
+        updateAllClearButton();
     });
 });
 
 const allclearBtn = document.querySelector("#allclear");
 allclearBtn.addEventListener('click', () => {
-    if (isInputting) {
-        if (currentInput.length > 0) {
-            currentInput = currentInput.slice(0, -1);
-            if (currentInput === '') currentInput = '0';
-            display.textContent = currentInput;
-            updateAllClearButton();
+    if (isInputting && currentInput !== "0") {
+            currentInput = currentInput.slice(0, -1) || '';
+            mainOutput.textContent = currentInput || '0';
+
+            if (currentInput === '') {
+                operationDisplay.textContent = '';
+
+            } else if (currentOperatorSymbol && firstOperand !== null) {
+                operationDisplay.textContent = `${firstOperand} ${currentOperatorSymbol} ${currentInput}`;
+            } else {
+                operationDisplay.textContent = currentInput;    
+            }        
+        } else {
+            clearError();
         }
-    } else {
-        currentInput = '0';
-        firstOperand = null;
-        secondOperand = null;
-        currentOperator = null;
-        shouldResetDisplay = false;
-        isError = false;
-        justEvaluated = false;
-        lastOperator = null;
-        lastSecondOperand = null;
-        isInputting = true;
-        display.textContent = currentInput;
-        updateAllClearButton();
-    }
+            updateAllClearButton();
 });
 
 const plusMinusButton = document.querySelector("#plusminus");
 plusMinusButton.addEventListener("click", () => {
-    if (isError) return;
-    if (currentInput === "0") return;
-
+    if (isError || currentInput === "0") return;
     currentInput = (parseFloat(currentInput) * -1).toString();
-    display.textContent = currentInput;
+    mainOutput.textContent = currentInput;
     updateAllClearButton();
 });
 
 const percentageButton = document.querySelector("#percentage");
 percentageButton.addEventListener("click", () => {
     if (isError) return;
-
     currentInput = (parseFloat(currentInput) / 100).toString();
-    display.textContent = currentInput;
+    mainOutput.textContent = currentInput;
     updateAllClearButton();
 });
 
@@ -188,32 +225,37 @@ equalsButton.addEventListener("click", () => {
         if (!lastOperator || !lastSecondOperand) return;
 
         const result = operate(lastOperator, Number(currentInput), Number(lastSecondOperand));
-
         if (result === 'ERR') {
             showError();
             return;
         }
 
-        currentInput = result.toString();
-        display.textContent = currentInput;
-        updateAllClearButton();
+        currentInput = roundResult(result).toString();
+        mainOutput.textContent = currentInput;
         justEvaluated = true;
+        updateAllClearButton();
         return;
     }
 
-    if (currentOperator === null || shouldResetDisplay) return;
+    if (shouldResetDisplay) return;
 
     secondOperand = currentInput;
-    const result = operate(currentOperator, Number(firstOperand), Number(secondOperand));
 
-    if (result === 'ERR') {
+    if (currentOperator === 'divide' && Number(secondOperand) === 0) {
         showError();
         return;
     }
 
-    currentInput = result.toString();
-    display.textContent = currentInput;
-    updateAllClearButton();
+    const result = operate(currentOperator, Number(firstOperand), Number(secondOperand));
+    if (result === 'ERR' || result === Infinity || isNaN(result)) {
+        showError();
+        return;
+    }
+
+    currentInput = roundResult(result).toString();
+    mainOutput.textContent = currentInput;
+
+    operationDisplay.textContent = `${firstOperand} ${currentOperatorSymbol} ${secondOperand} =`;
 
     lastOperator = currentOperator;
     lastSecondOperand = secondOperand;
@@ -221,8 +263,8 @@ equalsButton.addEventListener("click", () => {
     firstOperand = null;
     currentOperator = null;
     shouldResetDisplay = true;
-
     isInputting = false;
+    justEvaluated = true;
     updateAllClearButton();
 });
 
@@ -237,7 +279,32 @@ decimalButton.addEventListener("click", () => {
 
     if (!currentInput.includes(".")) {
         currentInput += ".";
-        display.textContent = currentInput;
+        mainOutput.textContent = currentInput;
         updateAllClearButton();
+    }
+});
+
+document.addEventListener("keydown", (e) => {
+    if (isError && e.key !== "Escape") return;
+
+    const key = e.key;
+
+    if (!isNaN(key)) {
+        document.querySelector(`.digit[data-key="${key}"]`)?.click();
+    } else if (key === ".") {
+        decimalButton.click();
+    } else if (["+", "-", "*", "/"].includes(key)) {
+        let symbol = key === "*" ? "x" : key;
+        document.querySelector(`.operator[data-key="${symbol}"]`)?.click();
+    } else if (key === "Enter" || key === "=") {
+        equalsButton.click();
+    } else if (key === "Backspace") {
+        allclearBtn.click();
+    } else if (key.toLowerCase() === "c" || key === "Escape") {
+        clearError();
+    } else if (key === "%") {
+        percentageButton.click();
+    } else if (key === "`") {
+        plusMinusButton.click();
     }
 });
